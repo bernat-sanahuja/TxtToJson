@@ -1,12 +1,29 @@
-﻿<Window x:Class="TxtToJson.MainWindow"
+﻿<Window x:Name="TxtToJson" x:Class="TxtToJson.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TxtToJson"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="TxtToJson" Height="450" Width="800"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        DragEnter="Window_DragEnter"
+        DragLeave="Window_DragLeave"
+        
+        >
+    <Grid x:Name="Grid1">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#1F1C2C" Offset="0" />
+                <GradientStop Color="#2D3A5C" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="TextBox1" HorizontalAlignment="Center" Margin="0,118,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="242" Grid.Column="1" Height="191"/>
 
     </Grid>
 </Window>
