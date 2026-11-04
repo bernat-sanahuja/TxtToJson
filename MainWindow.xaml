@@ -12,18 +12,29 @@
         DragLeave="Window_DragLeave"
         
         >
-    <Grid x:Name="Grid1">
+    <Grid x:Name="Grid1" ShowGridLines="True">
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#1F1C2C" Offset="0" />
-                <GradientStop Color="#2D3A5C" Offset="1" />
+                <GradientStop Color="#F5F7FB" Offset="0" />
+                <GradientStop Color="#E4E9F5" Offset="1" />
             </LinearGradientBrush>
         </Grid.Background>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0*"/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="TextBox1" HorizontalAlignment="Center" Margin="0,118,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="242" Grid.Column="1" Height="191"/>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
     </Grid>
 </Window>
