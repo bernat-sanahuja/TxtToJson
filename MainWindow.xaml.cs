@@ -1,10 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Media;
+using Microsoft.Win32;
 using TxtToJson.Models;
 
 namespace TxtToJson
@@ -12,22 +18,52 @@ namespace TxtToJson
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         /// <summary>Máximo de archivos permitidos (6 columnas x 4 filas).</summary>
         public const int MaxArchivos = 24;
 
-        /// <summary>
-        /// Única fuente de verdad de la interfaz.
-        /// Al añadir o quitar elementos, WPF actualiza la lista por su cuenta.
-        /// </summary>
-        public ObservableCollection<Archivo> Archivos { get; } = new ObservableCollection<Archivo>();
+        private static readonly JsonSerializerOptions OpcionesJson = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        private bool _mostrandoResultados;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>Archivos .txt sueltos en la ventana.</summary>
+        public ObservableCollection<Archivo> Archivos { get; } = new ObservableCollection<Archivo>();
+
+        /// <summary>JSON ya generados, uno por .txt convertido.</summary>
+        public ObservableCollection<ResultadoJson> Resultados { get; } = new ObservableCollection<ResultadoJson>();
+
+        /// <summary>true = se ve la pantalla de resultados; false = la de archivos.</summary>
+        public bool MostrandoResultados
+        {
+            get => _mostrandoResultados;
+            set
+            {
+                if (_mostrandoResultados == value)
+                {
+                    return;
+                }
+
+                _mostrandoResultados = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MostrandoResultados)));
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Arrastrar y soltar
+        // ------------------------------------------------------------------
 
         private void Window_DragEnter(object sender, DragEventArgs e)
         {
@@ -73,21 +109,18 @@ namespace TxtToJson
 
             foreach (string ruta in rutas)
             {
-                // Solo .txt
                 if (!Path.GetExtension(ruta).Equals(".txt", StringComparison.OrdinalIgnoreCase))
                 {
                     noTxt++;
                     continue;
                 }
 
-                // No duplicar
                 if (Archivos.Any(a => string.Equals(a.Ruta, ruta, StringComparison.OrdinalIgnoreCase)))
                 {
                     repetidos++;
                     continue;
                 }
 
-                // Respetar el límite
                 if (Archivos.Count >= MaxArchivos)
                 {
                     sobrantes++;
@@ -96,6 +129,9 @@ namespace TxtToJson
 
                 Archivos.Add(new Archivo(ruta));
             }
+
+            // Al soltar archivos nuevos volvemos a la vista de archivos.
+            MostrandoResultados = false;
 
             MostrarAvisos(noTxt, repetidos, sobrantes);
         }
@@ -108,6 +144,121 @@ namespace TxtToJson
             }
         }
 
+        // ------------------------------------------------------------------
+        // Execute: convierte todos los .txt y muestra los .json
+        // ------------------------------------------------------------------
+
+        private void Execute_Click(object sender, RoutedEventArgs e)
+        {
+            if (Archivos.Count == 0)
+            {
+                MessageBox.Show("Add some .txt files first.",
+                                "Nothing to convert",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                return;
+            }
+
+            List<ResultadoJson> nuevos = new List<ResultadoJson>();
+            List<string> errores = new List<string>();
+
+            foreach (Archivo archivo in Archivos)
+            {
+                try
+                {
+                    string texto = File.ReadAllText(archivo.Ruta);
+                    JsonNode? nodo = ParserTxt.Parsear(texto);
+                    string json = nodo is null ? "null" : nodo.ToJsonString(OpcionesJson);
+
+                    nuevos.Add(new ResultadoJson(archivo, json));
+                }
+                catch (FormatoInvalidoException error)
+                {
+                    errores.Add($"{Path.GetFileName(archivo.Ruta)} → {error.Message}");
+                }
+                catch (Exception error)
+                {
+                    errores.Add($"{Path.GetFileName(archivo.Ruta)} → could not be read ({error.Message})");
+                }
+            }
+
+            if (nuevos.Count > 0)
+            {
+                Resultados.Clear();
+
+                foreach (ResultadoJson resultado in nuevos)
+                {
+                    Resultados.Add(resultado);
+                }
+
+                MostrandoResultados = true;
+            }
+
+            if (errores.Count > 0)
+            {
+                MostrarErrores(errores);
+            }
+        }
+
+        private static void MostrarErrores(List<string> errores)
+        {
+            const int MaximoAMostrar = 8;
+
+            string detalle = string.Join(Environment.NewLine, errores.Take(MaximoAMostrar));
+
+            if (errores.Count > MaximoAMostrar)
+            {
+                detalle += Environment.NewLine + $"... and {errores.Count - MaximoAMostrar} more";
+            }
+
+            MessageBox.Show(detalle,
+                            "Some files could not be converted",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+        }
+
+        // ------------------------------------------------------------------
+        // Descargar un .json haciendo clic en él
+        // ------------------------------------------------------------------
+
+        private void GuardarJson_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement elemento || elemento.DataContext is not ResultadoJson resultado)
+            {
+                return;
+            }
+
+            SaveFileDialog dialogo = new SaveFileDialog
+            {
+                Title = "Save JSON",
+                FileName = resultado.Nombre,
+                DefaultExt = ".json",
+                Filter = "JSON (*.json)|*.json|All files (*.*)|*.*",
+                InitialDirectory = Path.GetDirectoryName(resultado.RutaOrigen) ?? ""
+            };
+
+            if (dialogo.ShowDialog() != true)
+            {
+                return;
+            }
+
+            try
+            {
+                File.WriteAllText(dialogo.FileName, resultado.Json, new UTF8Encoding(false));
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show($"Could not save the file:{Environment.NewLine}{error.Message}",
+                                "Error",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Avisos del drop
+        // ------------------------------------------------------------------
+
         private static void MostrarAvisos(int noTxt, int repetidos, int sobrantes)
         {
             List<string> avisos = new List<string>();
@@ -119,7 +270,7 @@ namespace TxtToJson
 
             if (repetidos > 0)
             {
-                avisos.Add($"{repetidos} file(s) are already in the list.");
+                avisos.Add($"{repetidos} file(s) were already in the list.");
             }
 
             if (sobrantes > 0)
