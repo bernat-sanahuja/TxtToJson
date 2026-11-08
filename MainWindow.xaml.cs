@@ -30,6 +30,7 @@ namespace TxtToJson
         };
 
         private bool _mostrandoResultados;
+        private HowToUseWindow? _ventanaAyuda;
 
         public MainWindow()
         {
@@ -151,6 +152,19 @@ namespace TxtToJson
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
             MostrandoResultados = false;
+        }
+
+        private void Ayuda_Click(object sender, RoutedEventArgs e)
+        {
+            // Si ya esta abierta, la traemos al frente en lugar de abrir otra.
+            if (_ventanaAyuda is { IsLoaded: true })
+            {
+                _ventanaAyuda.Activate();
+                return;
+            }
+
+            _ventanaAyuda = new HowToUseWindow { Owner = this };
+            _ventanaAyuda.Show();   // Show(), no ShowDialog(): no bloquea la principal
         }
 
         // ------------------------------------------------------------------
