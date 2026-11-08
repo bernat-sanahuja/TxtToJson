@@ -92,6 +92,35 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- "Back": solo se ve en la vista de resultados -->
+        <Style x:Key="BackButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- "Download all": solo se ve en la vista de resultados -->
+        <Style x:Key="DownloadAllButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- "Execute": se oculta en la vista de resultados -->
+        <Style x:Key="ExecuteButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="28">
@@ -121,11 +150,19 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Top"
                         Margin="0,2,0,0">
+                <Button Content="← Back"
+                        Style="{StaticResource BackButton}"
+                        Click="Volver_Click"
+                        Margin="0,0,8,0"/>
                 <Button Content="How to use"
                         Style="{StaticResource GhostButton}"
                         Margin="0,0,8,0"/>
+                <Button Content="Download all"
+                        Style="{StaticResource DownloadAllButton}"
+                        Click="DescargarTodo_Click"
+                        Margin="0,0,8,0"/>
                 <Button Content="Execute"
-                        Style="{StaticResource PrimaryButton}"
+                        Style="{StaticResource ExecuteButton}"
                         Click="Execute_Click"/>
             </StackPanel>
         </Grid>
@@ -362,11 +399,36 @@
             </Grid>
         </Border>
 
-        <!-- Pie -->
-        <TextBlock Grid.Row="2"
-                   Margin="3,14,0,0"
-                   FontSize="12"
-                   Foreground="{StaticResource MutedBrush}"
-                   Text="Up to 24 files · .txt only"/>
+        <!-- Pie: cambia según la vista -->
+        <Grid Grid.Row="2" Margin="3,14,0,0">
+            <TextBlock FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       Text="Up to 24 files · .txt only">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       Text="Click a .json to save it individually, or use Download all">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
     </Grid>
 </Window>
