@@ -1,14 +1,11 @@
-﻿using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
+using TxtToJson.Models;
 
 namespace TxtToJson
 {
@@ -17,111 +14,125 @@ namespace TxtToJson
     /// </summary>
     public partial class MainWindow : Window
     {
-        List<string> rutas = new List<string>();
-        private LinearGradientBrush colorDrag = new LinearGradientBrush
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(1, 1)
-        };
+        /// <summary>Máximo de archivos permitidos (6 columnas x 4 filas).</summary>
+        public const int MaxArchivos = 24;
 
+        /// <summary>
+        /// Única fuente de verdad de la interfaz.
+        /// Al añadir o quitar elementos, WPF actualiza la lista por su cuenta.
+        /// </summary>
+        public ObservableCollection<Archivo> Archivos { get; } = new ObservableCollection<Archivo>();
 
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void Window_Drop(object sender, DragEventArgs e)
-        {
-            // Cambiar color
-            colorDrag.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F5F7FB"), 0));
-            colorDrag.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#C7D6FA"), 1));
-
-            Grid1.Background = colorDrag;
-
-
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                // Guardar en una lista los elementos arrastrados
-                string[] rutasArray = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-                foreach (string rutaGuardada in rutas)
-                {
-                    foreach (string rutaNueva in rutasArray)
-                    {
-                        if (rutaGuardada.Equals(rutaNueva, StringComparison.OrdinalIgnoreCase))
-                        {
-                            MessageBox.Show("You have already added this file.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            return;
-                        }
-                    }
-                }
-                rutas.AddRange(rutasArray);
-
-                // Borrar los elementos que no sean .txt
-                int eliminados = rutas.RemoveAll(r => !System.IO.Path.GetExtension(r).Equals(".txt", StringComparison.OrdinalIgnoreCase));
-
-                if (eliminados > 0)
-                {
-                    MessageBox.Show("You can only drop .txt files.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                OrganizarArchivos(rutas);
-            }
+            DataContext = this;
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e)
         {
-            colorDrag.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#DCE8FF"), 0));
-            colorDrag.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#C7D6FA"), 1));
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
 
-            Grid1.Background = colorDrag;
+            Grid1.Background = (Brush)FindResource("DropHoverBrush");
+            e.Effects = DragDropEffects.Copy;
+            e.Handled = true;
+        }
+
+        private void Window_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+                ? DragDropEffects.Copy
+                : DragDropEffects.None;
+            e.Handled = true;
         }
 
         private void Window_DragLeave(object sender, DragEventArgs e)
         {
-            colorDrag.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#F5F7FB"), 0));
-            colorDrag.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#C7D6FA"), 1));
-
-            Grid1.Background = colorDrag;
+            Grid1.Background = Brushes.Transparent;
         }
 
-        private void OrganizarArchivos(List<string> rutas)
+        private void Window_Drop(object sender, DragEventArgs e)
         {
-            int row = 0;
-            int column = 0;
+            Grid1.Background = Brushes.Transparent;
+
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                return;
+            }
+
+            string[] rutas = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            int noTxt = 0;
+            int repetidos = 0;
+            int sobrantes = 0;
 
             foreach (string ruta in rutas)
             {
-                StackPanel panel = new StackPanel();
-                panel.HorizontalAlignment = HorizontalAlignment.Center;
-                panel.VerticalAlignment = VerticalAlignment.Center;
-
-                Image imagen = new Image();
-                imagen.Width = 48;
-                imagen.Height = 48;
-                imagen.Source = new BitmapImage(new Uri("/Resources/Icons/txt_icon.png", UriKind.Relative));
-
-                Label label = new Label();
-                label.Content = System.IO.Path.GetFileName(ruta);
-                label.HorizontalAlignment = HorizontalAlignment.Center;
-                label.FontFamily = new FontFamily("Segoe UI");
-
-                panel.Children.Add(imagen);
-                panel.Children.Add(label);
-
-                Grid.SetRow(panel, row);
-                Grid.SetColumn(panel, column);
-                Grid1.Children.Add(panel);
-
-                if (column == 5)
+                // Solo .txt
+                if (!Path.GetExtension(ruta).Equals(".txt", StringComparison.OrdinalIgnoreCase))
                 {
-                    column = 0;
-                    row++;
+                    noTxt++;
+                    continue;
                 }
-                else
+
+                // No duplicar
+                if (Archivos.Any(a => string.Equals(a.Ruta, ruta, StringComparison.OrdinalIgnoreCase)))
                 {
-                    column++;
+                    repetidos++;
+                    continue;
                 }
+
+                // Respetar el límite
+                if (Archivos.Count >= MaxArchivos)
+                {
+                    sobrantes++;
+                    continue;
+                }
+
+                Archivos.Add(new Archivo(ruta));
+            }
+
+            MostrarAvisos(noTxt, repetidos, sobrantes);
+        }
+
+        private void EliminarArchivo_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement elemento && elemento.DataContext is Archivo archivo)
+            {
+                Archivos.Remove(archivo);
+            }
+        }
+
+        private static void MostrarAvisos(int noTxt, int repetidos, int sobrantes)
+        {
+            List<string> avisos = new List<string>();
+
+            if (noTxt > 0)
+            {
+                avisos.Add($"Only .txt files are accepted ({noTxt} ignored).");
+            }
+
+            if (repetidos > 0)
+            {
+                avisos.Add($"{repetidos} file(s) are already in the list.");
+            }
+
+            if (sobrantes > 0)
+            {
+                avisos.Add($"Only {MaxArchivos} files can be added ({sobrantes} ignored).");
+            }
+
+            if (avisos.Count > 0)
+            {
+                MessageBox.Show(string.Join(Environment.NewLine, avisos),
+                                "Warning",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
             }
         }
     }

@@ -1,40 +1,272 @@
-﻿<Window x:Name="TxtToJson" x:Class="TxtToJson.MainWindow"
+<Window x:Class="TxtToJson.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TxtToJson"
         mc:Ignorable="d"
-        Title="TxtToJson" Height="450" Width="800"
+        Title="TxtToJson"
+        Height="660" Width="880"
+        MinHeight="640" MinWidth="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F7FB"
+        FontFamily="Segoe UI"
         AllowDrop="True"
         Drop="Window_Drop"
         DragEnter="Window_DragEnter"
-        DragLeave="Window_DragLeave"
-        
-        >
-    <Grid x:Name="Grid1" ShowGridLines="True">
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#F5F7FB" Offset="0" />
-                <GradientStop Color="#E4E9F5" Offset="1" />
-            </LinearGradientBrush>
-        </Grid.Background>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+        DragOver="Window_DragOver"
+        DragLeave="Window_DragLeave">
 
-        </Grid.ColumnDefinitions>
+    <Window.Resources>
+        <SolidColorBrush x:Key="InkBrush"   Color="#1F2937"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#6B7280"/>
+        <SolidColorBrush x:Key="CardBrush"  Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="LineBrush"  Color="#D7DEEA"/>
+        <SolidColorBrush x:Key="HoverBrush" Color="#EDF1F7"/>
 
+        <LinearGradientBrush x:Key="DropHoverBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F5F7FB" Offset="0"/>
+            <GradientStop Color="#C7D6FA" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Botón secundario: fondo transparente y borde fino -->
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Fondo"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource LineBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Fondo" Property="Background" Value="{StaticResource HoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Fondo" Property="Background" Value="{StaticResource LineBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botón principal: relleno azul -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Fondo"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Fondo" Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Fondo" Property="Background" Value="#1E40AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="28">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Cabecera -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="TxtToJson"
+                           FontSize="24" FontWeight="SemiBold"
+                           Foreground="{StaticResource InkBrush}"/>
+                <TextBlock Text="Drag &amp; drop your .txt files below"
+                           FontSize="13" Margin="0,4,0,0"
+                           Foreground="{StaticResource MutedBrush}"/>
+            </StackPanel>
+
+            <!-- Botones de la cabecera (todavía sin funcionalidad) -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Top"
+                        Margin="0,2,0,0">
+                <Button Content="How to use"
+                        Style="{StaticResource GhostButton}"
+                        Margin="0,0,8,0"/>
+                <Button Content="Execute"
+                        Style="{StaticResource PrimaryButton}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Zona de drop -->
+        <Border Grid.Row="1"
+                AllowDrop="True"
+                Background="{StaticResource CardBrush}"
+                BorderBrush="{StaticResource LineBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14">
+            <Grid>
+                <Rectangle RadiusX="8" RadiusY="8"
+                           Stroke="{StaticResource LineBrush}"
+                           StrokeThickness="2"
+                           StrokeDashArray="6 4"
+                           IsHitTestVisible="False"/>
+
+                <!--
+                    Rejilla de DEPURACIÓN.
+                    Filas "*" con MinHeight: crecen con la ventana, pero no
+                    bajan de 100 (el mínimo que cabe sin recortar el contenido).
+                    Cuando ya no la necesites: ShowGridLines="False".
+                -->
+                <Grid x:Name="Grid1" ShowGridLines="True"
+                      Background="Transparent"
+                      Margin="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" MinHeight="100"/>
+                        <RowDefinition Height="*" MinHeight="100"/>
+                        <RowDefinition Height="*" MinHeight="100"/>
+                        <RowDefinition Height="*" MinHeight="100"/>
+                    </Grid.RowDefinitions>
+                </Grid>
+
+                <!--
+                    Lista de archivos. Se dibuja sola: cada elemento de
+                    "Archivos" usa el DataTemplate de abajo.
+                -->
+                <ItemsControl x:Name="Lista"
+                              ItemsSource="{Binding Archivos}"
+                              Margin="6">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="4" Columns="6"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!--
+                                MinHeight (no Height): la celda se estira con la
+                                ventana, pero nunca por debajo de 100.
+                                Background Transparent: toda la celda detecta el ratón.
+                            -->
+                            <Grid MinHeight="100" Background="Transparent">
+
+                                <!-- Fondo de la celda al pasar el ratón -->
+                                <Border Margin="2" CornerRadius="8">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Value="True"
+                                                             Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ContentPresenter}}">
+                                                    <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+
+                                <!-- Icono + nombre -->
+                                <StackPanel VerticalAlignment="Center"
+                                            HorizontalAlignment="Stretch"
+                                            Margin="8,4">
+                                    <Image Source="/Resources/Icons/txt_icon.png"
+                                           Width="48" Height="48"
+                                           HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Nombre}"
+                                               ToolTip="{Binding Ruta}"
+                                               FontSize="12"
+                                               Margin="0,4,0,0"
+                                               TextAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{StaticResource InkBrush}"/>
+                                </StackPanel>
+
+                                <!-- Cruz para quitar el archivo (solo visible al pasar el ratón) -->
+                                <Button HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Width="22" Height="22"
+                                        Margin="0,2,2,0"
+                                        Padding="0"
+                                        BorderThickness="0"
+                                        Background="Transparent"
+                                        Cursor="Hand"
+                                        ToolTip="Remove"
+                                        Click="EliminarArchivo_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="4">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Value="True"
+                                                             Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ContentPresenter}}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Image Source="/Resources/Icons/RedCross.png"
+                                           Width="12" Height="12"/>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+
+        <!-- Pie -->
+        <TextBlock Grid.Row="2"
+                   Margin="3,14,0,0"
+                   FontSize="12"
+                   Foreground="{StaticResource MutedBrush}"
+                   Text="Up to 24 files · .txt only"/>
     </Grid>
 </Window>
