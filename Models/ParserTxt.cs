@@ -19,6 +19,8 @@ namespace TxtToJson.Models
     ///   - true/false/null (sin comillas) son booleano y null.
     ///   - Número entero -> int; con decimales (o coma) -> double.
     ///   - Todo lo demás es string, sin necesidad de comillas.
+    ///
+    /// Todos los mensajes de error están en inglés, porque son los que ve el usuario.
     /// </summary>
     public static class ParserTxt
     {
@@ -30,14 +32,14 @@ namespace TxtToJson.Models
 
             if (lineas.Count == 0)
             {
-                throw new FormatoInvalidoException(1, "el archivo está vacío");
+                throw new FormatoInvalidoException(1, "the file is empty");
             }
 
             if (lineas[0].Texto.StartsWith("-"))
             {
                 throw new FormatoInvalidoException(
                     lineas[0].Numero,
-                    "el archivo debe empezar por clave:valor, no por un elemento de lista");
+                    "the file must start with key:value, not with a list item");
             }
 
             int indice = 0;
@@ -45,7 +47,7 @@ namespace TxtToJson.Models
 
             if (indice < lineas.Count)
             {
-                throw new FormatoInvalidoException(lineas[indice].Numero, "no se pudo interpretar esta línea");
+                throw new FormatoInvalidoException(lineas[indice].Numero, "this line could not be interpreted");
             }
 
             return raiz;
@@ -143,13 +145,13 @@ namespace TxtToJson.Models
 
                 if (linea.Texto.StartsWith("-"))
                 {
-                    throw new FormatoInvalidoException(linea.Numero, "elemento de lista fuera de una lista");
+                    throw new FormatoInvalidoException(linea.Numero, "list item outside of a list");
                 }
 
                 int dosPuntos = linea.Texto.IndexOf(':');
                 if (dosPuntos < 0)
                 {
-                    throw new FormatoInvalidoException(linea.Numero, "se esperaba clave:valor");
+                    throw new FormatoInvalidoException(linea.Numero, "expected key:value");
                 }
 
                 string clave = linea.Texto.Substring(0, dosPuntos).Trim();
@@ -157,7 +159,7 @@ namespace TxtToJson.Models
 
                 if (clave.Length == 0)
                 {
-                    throw new FormatoInvalidoException(linea.Numero, "la clave está vacía");
+                    throw new FormatoInvalidoException(linea.Numero, "the key is empty");
                 }
 
                 indice++;
@@ -207,14 +209,14 @@ namespace TxtToJson.Models
                 {
                     throw new FormatoInvalidoException(
                         linea.Numero,
-                        "se esperaba un elemento de lista que empiece por '-'");
+                        "expected a list item starting with '-'");
                 }
 
                 string resto = linea.Texto.Substring(1).Trim();
 
                 if (resto.Length == 0)
                 {
-                    throw new FormatoInvalidoException(linea.Numero, "el elemento de lista está vacío");
+                    throw new FormatoInvalidoException(linea.Numero, "the list item is empty");
                 }
 
                 int dosPuntos = resto.IndexOf(':');
@@ -233,7 +235,7 @@ namespace TxtToJson.Models
 
                 if (clave.Length == 0)
                 {
-                    throw new FormatoInvalidoException(linea.Numero, "la clave del elemento está vacía");
+                    throw new FormatoInvalidoException(linea.Numero, "the list item key is empty");
                 }
 
                 JsonObject elemento = new JsonObject();
@@ -259,7 +261,7 @@ namespace TxtToJson.Models
                     int dp = hermana.Texto.IndexOf(':');
                     if (dp < 0)
                     {
-                        throw new FormatoInvalidoException(hermana.Numero, "se esperaba clave:valor");
+                        throw new FormatoInvalidoException(hermana.Numero, "expected key:value");
                     }
 
                     string claveHermana = hermana.Texto.Substring(0, dp).Trim();
@@ -267,7 +269,7 @@ namespace TxtToJson.Models
 
                     if (claveHermana.Length == 0)
                     {
-                        throw new FormatoInvalidoException(hermana.Numero, "la clave está vacía");
+                        throw new FormatoInvalidoException(hermana.Numero, "the key is empty");
                     }
 
                     indice++;
@@ -305,7 +307,7 @@ namespace TxtToJson.Models
             {
                 if (!valor.EndsWith("]"))
                 {
-                    throw new FormatoInvalidoException(numeroLinea, "la lista con corchetes no está cerrada con ']'");
+                    throw new FormatoInvalidoException(numeroLinea, "the bracket list is not closed with ']'");
                 }
 
                 string interior = valor.Substring(1, valor.Length - 2).Trim();
@@ -319,7 +321,7 @@ namespace TxtToJson.Models
 
                         if (elemento.Length == 0)
                         {
-                            throw new FormatoInvalidoException(numeroLinea, "hay un elemento vacío en la lista");
+                            throw new FormatoInvalidoException(numeroLinea, "there is an empty item in the list");
                         }
 
                         arreglo.Add(Escalar(elemento, numeroLinea));

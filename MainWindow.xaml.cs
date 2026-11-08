@@ -178,7 +178,7 @@ namespace TxtToJson
                 }
                 catch (Exception error)
                 {
-                    errores.Add($"{Path.GetFileName(archivo.Ruta)} → no se pudo leer ({error.Message})");
+                    errores.Add($"{Path.GetFileName(archivo.Ruta)} → could not be read ({error.Message})");
                 }
             }
 

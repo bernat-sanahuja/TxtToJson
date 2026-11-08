@@ -9,7 +9,7 @@ namespace TxtToJson.Models
     public class FormatoInvalidoException : Exception
     {
         public FormatoInvalidoException(int linea, string mensaje)
-            : base($"línea {linea}: {mensaje}")
+            : base($"line {linea}: {mensaje}")
         {
             Linea = linea;
         }
