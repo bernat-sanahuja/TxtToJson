@@ -22,6 +22,8 @@
         <SolidColorBrush x:Key="CardBrush"  Color="#FFFFFF"/>
         <SolidColorBrush x:Key="LineBrush"  Color="#D7DEEA"/>
         <SolidColorBrush x:Key="HoverBrush" Color="#EDF1F7"/>
+        <SolidColorBrush x:Key="JsonBack"   Color="#EEF2FF"/>
+        <SolidColorBrush x:Key="JsonInk"    Color="#2563EB"/>
 
         <LinearGradientBrush x:Key="DropHoverBrush" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#F5F7FB" Offset="0"/>
@@ -115,7 +117,6 @@
                            Foreground="{StaticResource MutedBrush}"/>
             </StackPanel>
 
-            <!-- Botones de la cabecera (todavía sin funcionalidad) -->
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         VerticalAlignment="Top"
@@ -124,11 +125,12 @@
                         Style="{StaticResource GhostButton}"
                         Margin="0,0,8,0"/>
                 <Button Content="Execute"
-                        Style="{StaticResource PrimaryButton}"/>
+                        Style="{StaticResource PrimaryButton}"
+                        Click="Execute_Click"/>
             </StackPanel>
         </Grid>
 
-        <!-- Zona de drop -->
+        <!-- Zona principal -->
         <Border Grid.Row="1"
                 AllowDrop="True"
                 Background="{StaticResource CardBrush}"
@@ -137,128 +139,226 @@
                 CornerRadius="12"
                 Padding="14">
             <Grid>
-                <Rectangle RadiusX="8" RadiusY="8"
-                           Stroke="{StaticResource LineBrush}"
-                           StrokeThickness="2"
-                           StrokeDashArray="6 4"
-                           IsHitTestVisible="False"/>
 
-                <!--
-                    Rejilla de DEPURACIÓN.
-                    Filas "*" con MinHeight: crecen con la ventana, pero no
-                    bajan de 100 (el mínimo que cabe sin recortar el contenido).
-                    Cuando ya no la necesites: ShowGridLines="False".
-                -->
-                <Grid x:Name="Grid1" ShowGridLines="True"
-                      Background="Transparent"
-                      Margin="6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" MinHeight="100"/>
-                        <RowDefinition Height="*" MinHeight="100"/>
-                        <RowDefinition Height="*" MinHeight="100"/>
-                        <RowDefinition Height="*" MinHeight="100"/>
-                    </Grid.RowDefinitions>
+                <!-- ===================================================== -->
+                <!-- Vista 1: archivos .txt                                -->
+                <!-- ===================================================== -->
+                <Grid x:Name="PanelArchivos">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Rectangle RadiusX="8" RadiusY="8"
+                               Stroke="{StaticResource LineBrush}"
+                               StrokeThickness="2"
+                               StrokeDashArray="6 4"
+                               IsHitTestVisible="False"/>
+
+                    <!--
+                        Rejilla de DEPURACIÓN.
+                        Filas "*" con MinHeight: crecen con la ventana, pero no
+                        bajan de 100 (el mínimo que cabe sin recortar el contenido).
+                        Cuando ya no la necesites: ShowGridLines="False".
+                    -->
+                    <Grid x:Name="Grid1" ShowGridLines="True"
+                          Background="Transparent"
+                          Margin="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" MinHeight="100"/>
+                            <RowDefinition Height="*" MinHeight="100"/>
+                            <RowDefinition Height="*" MinHeight="100"/>
+                            <RowDefinition Height="*" MinHeight="100"/>
+                        </Grid.RowDefinitions>
+                    </Grid>
+
+                    <ItemsControl x:Name="Lista"
+                                  ItemsSource="{Binding Archivos}"
+                                  Margin="6">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="4" Columns="6"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!--
+                                    MinHeight (no Height): la celda se estira con la
+                                    ventana, pero nunca por debajo de 100.
+                                    Background Transparent: toda la celda detecta el ratón.
+                                -->
+                                <Grid MinHeight="100" Background="Transparent">
+
+                                    <!-- Fondo de la celda al pasar el ratón -->
+                                    <Border Margin="2" CornerRadius="8">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Value="True"
+                                                                 Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ContentPresenter}}">
+                                                        <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                    </Border>
+
+                                    <!-- Icono + nombre -->
+                                    <StackPanel VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
+                                                Margin="8,4">
+                                        <Image Source="/Resources/Icons/txt_icon.png"
+                                               Width="48" Height="48"
+                                               HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Nombre}"
+                                                   ToolTip="{Binding Ruta}"
+                                                   FontSize="12"
+                                                   Margin="0,4,0,0"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{StaticResource InkBrush}"/>
+                                    </StackPanel>
+
+                                    <!-- Cruz para quitar el archivo (solo visible al pasar el ratón) -->
+                                    <Button HorizontalAlignment="Right"
+                                            VerticalAlignment="Top"
+                                            Width="22" Height="22"
+                                            Margin="0,2,2,0"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            Cursor="Hand"
+                                            ToolTip="Remove"
+                                            Click="EliminarArchivo_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="4">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Hidden"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Value="True"
+                                                                 Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ContentPresenter}}">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <Image Source="/Resources/Icons/RedCross.png"
+                                               Width="12" Height="12"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Grid>
 
-                <!--
-                    Lista de archivos. Se dibuja sola: cada elemento de
-                    "Archivos" usa el DataTemplate de abajo.
-                -->
-                <ItemsControl x:Name="Lista"
-                              ItemsSource="{Binding Archivos}"
-                              Margin="6">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Rows="4" Columns="6"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+                <!-- ===================================================== -->
+                <!-- Vista 2: resultados .json (clic para guardar)         -->
+                <!-- ===================================================== -->
+                <Grid x:Name="PanelResultados">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
 
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <!--
-                                MinHeight (no Height): la celda se estira con la
-                                ventana, pero nunca por debajo de 100.
-                                Background Transparent: toda la celda detecta el ratón.
-                            -->
-                            <Grid MinHeight="100" Background="Transparent">
+                    <ItemsControl ItemsSource="{Binding Resultados}" Margin="6">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="4" Columns="6"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
 
-                                <!-- Fondo de la celda al pasar el ratón -->
-                                <Border Margin="2" CornerRadius="8">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Value="True"
-                                                             Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ContentPresenter}}">
-                                                    <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                </Border>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid MinHeight="100" Background="Transparent">
 
-                                <!-- Icono + nombre -->
-                                <StackPanel VerticalAlignment="Center"
-                                            HorizontalAlignment="Stretch"
-                                            Margin="8,4">
-                                    <Image Source="/Resources/Icons/txt_icon.png"
-                                           Width="48" Height="48"
-                                           HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Nombre}"
-                                               ToolTip="{Binding Ruta}"
-                                               FontSize="12"
-                                               Margin="0,4,0,0"
-                                               TextAlignment="Center"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{StaticResource InkBrush}"/>
-                                </StackPanel>
+                                    <!-- Toda la tarjeta es un botón: al pulsarla se guarda el JSON -->
+                                    <Button Click="GuardarJson_Click"
+                                            Cursor="Hand"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            ToolTip="Click to save this JSON">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Fondo"
+                                                        Margin="2"
+                                                        CornerRadius="8"
+                                                        Background="Transparent">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Fondo" Property="Background" Value="{StaticResource HoverBrush}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="Fondo" Property="Background" Value="{StaticResource LineBrush}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
 
-                                <!-- Cruz para quitar el archivo (solo visible al pasar el ratón) -->
-                                <Button HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Width="22" Height="22"
-                                        Margin="0,2,2,0"
-                                        Padding="0"
-                                        BorderThickness="0"
-                                        Background="Transparent"
-                                        Cursor="Hand"
-                                        ToolTip="Remove"
-                                        Click="EliminarArchivo_Click">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="4">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
+                                        <StackPanel Margin="8,4" HorizontalAlignment="Stretch">
+                                            <Border Width="48" Height="48"
+                                                    CornerRadius="10"
+                                                    Background="{StaticResource JsonBack}"
+                                                    HorizontalAlignment="Center">
+                                                <TextBlock Text="{}{ }"
+                                                           FontFamily="Consolas"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource JsonInk}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
                                             </Border>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Visibility" Value="Hidden"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Value="True"
-                                                             Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ContentPresenter}}">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                    <Image Source="/Resources/Icons/RedCross.png"
-                                           Width="12" Height="12"/>
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+
+                                            <TextBlock Text="{Binding Nombre}"
+                                                       FontSize="12"
+                                                       Margin="0,6,0,0"
+                                                       TextAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Foreground="{StaticResource InkBrush}"/>
+
+                                            <TextBlock Text="click to save"
+                                                       FontSize="10"
+                                                       Margin="0,2,0,0"
+                                                       TextAlignment="Center"
+                                                       Foreground="{StaticResource MutedBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
             </Grid>
         </Border>
 
