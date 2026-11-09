@@ -4,11 +4,7 @@ A small Windows desktop app that turns a hand-written `.txt` file into JSON.
 
 Write your data the easy way — no braces, no commas, no quotes required — and get valid, indented JSON out of it.
 
-<!--
-    Screenshot placeholder. Drop an image in the repo (for example docs/screenshot.png)
-    and replace this comment with:
-    ![TxtToJson](docs/screenshot.png)
--->
+<img width="1084" height="817" alt="TxtToJson_yniJ5A2QcA" src="https://github.com/user-attachments/assets/8ba421b1-515e-4385-adaf-30c2e4f51d87" />
 
 ## Features
 
@@ -80,56 +76,17 @@ A few consequences worth knowing:
 
 ## Download
 
-Grab a build from the [Releases](https://github.com/bernat-sanahuja/TxtToJson/releases) page:
+Download a build from the [Releases](https://github.com/bernat-sanahuja/TxtToJson/releases) page:
 
 | Build | Size | Requirements |
 |---|---|---|
 | Self-contained | ~133 MB | **None.** Extract and run. |
 | Framework-dependent | ~1 MB | [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download) |
 
-It is a portable app: no installer, no registry entries. Unzip and run `TxtToJson.exe`.
-
-> The executable is not code signed, so Windows SmartScreen will warn you the first time. Choose **More info → Run anyway**. If you downloaded a `.zip`, right-click it → **Properties** → **Unblock** before extracting.
-
-## Build from source
-
-Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
-
-```powershell
-git clone https://github.com/bernat-sanahuja/TxtToJson.git
-cd TxtToJson
-
-# Run it
-dotnet run
-
-# Self-contained build (no .NET needed on the target machine)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o ./release/self-contained
-
-# Small build (target machine needs the .NET 10 Desktop Runtime)
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -o ./release/no-self-contained
-```
-
-## Project layout
-
-```
-MainWindow.xaml          main window: file list and results
-MainWindow.xaml.cs       drag & drop, conversion, saving
-HowToUseWindow.xaml      help window with the rules and the example
-App.xaml                 shared brushes and button styles
-TxtToJson.csproj         net10.0-windows, WPF, app icon
-Models/
-  Archivo.cs               one dropped .txt file
-  ParserTxt.cs             the parser: text -> JSON tree
-  ResultadoJson.cs         one generated .json
-  FormatoInvalidoException.cs  parse error with its line number
-```
-
 ## Limitations
 
 - Windows only (WPF)
 - `.txt` files only, up to 24 at a time
-- No comments in the input format
-- No multi-line strings: every value lives on a single line
 
 ## Privacy
 
