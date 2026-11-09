@@ -8,6 +8,8 @@
     <UseWPF>true</UseWPF>
     <!-- Icono del .exe en el Explorador y en la barra de tareas -->
     <ApplicationIcon>Resources\Icons\icon.ico</ApplicationIcon>
+    <!-- Solo satelites de idioma en ingles: evita 13 carpetas de traducciones del runtime -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
