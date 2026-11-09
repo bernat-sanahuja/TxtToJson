@@ -53,9 +53,7 @@ namespace TxtToJson.Models
             return raiz;
         }
 
-        // ------------------------------------------------------------------
         // Estructuras internas
-        // ------------------------------------------------------------------
 
         private sealed class Linea
         {
@@ -64,9 +62,7 @@ namespace TxtToJson.Models
             public string Texto = "";
         }
 
-        // ------------------------------------------------------------------
         // Análisis línea a línea
-        // ------------------------------------------------------------------
 
         private static List<Linea> Analizar(string texto)
         {
@@ -91,7 +87,6 @@ namespace TxtToJson.Models
                 string cruda = crudas[n];
                 string sinEspacios = cruda.Trim();
 
-                // Líneas en blanco: se ignoran.
                 if (sinEspacios.Length == 0)
                 {
                     continue;
@@ -131,9 +126,7 @@ namespace TxtToJson.Models
             return ancho;
         }
 
-        // ------------------------------------------------------------------
         // Objetos
-        // ------------------------------------------------------------------
 
         private static JsonObject ParsearObjeto(List<Linea> lineas, ref int indice, int sangriaDelPadre)
         {
@@ -193,9 +186,7 @@ namespace TxtToJson.Models
             return ParsearObjeto(lineas, ref indice, sangriaDeLaClave);
         }
 
-        // ------------------------------------------------------------------
         // Listas
-        // ------------------------------------------------------------------
 
         private static JsonArray ParsearLista(List<Linea> lineas, ref int indice, int sangriaDelPadre)
         {
@@ -290,9 +281,7 @@ namespace TxtToJson.Models
             return lista;
         }
 
-        // ------------------------------------------------------------------
         // Valores sueltos
-        // ------------------------------------------------------------------
 
         private static JsonNode? Escalar(string valor, int numeroLinea)
         {

@@ -15,9 +15,6 @@ using TxtToJson.Models;
 
 namespace TxtToJson
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         /// <summary>Máximo de archivos permitidos (6 columnas x 4 filas).</summary>
@@ -62,9 +59,7 @@ namespace TxtToJson
             }
         }
 
-        // ------------------------------------------------------------------
         // Arrastrar y soltar
-        // ------------------------------------------------------------------
 
         private void Window_DragEnter(object sender, DragEventArgs e)
         {
@@ -131,7 +126,6 @@ namespace TxtToJson
                 Archivos.Add(new Archivo(ruta));
             }
 
-            // Al soltar archivos nuevos volvemos a la vista de archivos.
             MostrandoResultados = false;
 
             MostrarAvisos(noTxt, repetidos, sobrantes);
@@ -145,9 +139,7 @@ namespace TxtToJson
             }
         }
 
-        // ------------------------------------------------------------------
         // Navegación entre vistas
-        // ------------------------------------------------------------------
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
@@ -167,9 +159,7 @@ namespace TxtToJson
             _ventanaAyuda.Show();   // Show(), no ShowDialog(): no bloquea la principal
         }
 
-        // ------------------------------------------------------------------
         // Execute: convierte todos los .txt y muestra los .json
-        // ------------------------------------------------------------------
 
         private void Execute_Click(object sender, RoutedEventArgs e)
         {
@@ -223,9 +213,7 @@ namespace TxtToJson
             }
         }
 
-        // ------------------------------------------------------------------
         // Guardar un .json individual: clic en su tarjeta
-        // ------------------------------------------------------------------
 
         private void GuardarJson_Click(object sender, RoutedEventArgs e)
         {
@@ -261,9 +249,7 @@ namespace TxtToJson
             }
         }
 
-        // ------------------------------------------------------------------
         // Guardar todos los .json en una carpeta
-        // ------------------------------------------------------------------
 
         private void DescargarTodo_Click(object sender, RoutedEventArgs e)
         {
@@ -347,9 +333,7 @@ namespace TxtToJson
                             MessageBoxImage.Information);
         }
 
-        // ------------------------------------------------------------------
         // Avisos
-        // ------------------------------------------------------------------
 
         private static void MostrarErrores(string titulo, List<string> errores)
         {

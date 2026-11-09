@@ -112,9 +112,7 @@
                 Padding="14">
             <Grid>
 
-                <!-- ===================================================== -->
-                <!-- Vista 1: archivos .txt                                -->
-                <!-- ===================================================== -->
+                <!-- Vista 1: archivos .txt -->
                 <Grid x:Name="PanelArchivos">
                     <Grid.Style>
                         <Style TargetType="Grid">
@@ -133,10 +131,8 @@
                                IsHitTestVisible="False"/>
 
                     <!--
-                        Rejilla de DEPURACIÓN.
-                        Filas "*" con MinHeight: crecen con la ventana, pero no
-                        bajan de 100 (el mínimo que cabe sin recortar el contenido).
-                        Cuando ya no la necesites: ShowGridLines="False".
+                        Superficie del fondo de la zona de archivos: se tiñe al arrastrar.
+                        Filas "*" con MinHeight para que no se compriman por debajo de 100.
                     -->
                     <Grid x:Name="Grid1"
                           Background="Transparent"
@@ -190,7 +186,6 @@
                                         </Border.Style>
                                     </Border>
 
-                                    <!-- Icono + nombre -->
                                     <StackPanel VerticalAlignment="Center"
                                                 HorizontalAlignment="Stretch"
                                                 Margin="8,4">
@@ -246,9 +241,7 @@
                     </ItemsControl>
                 </Grid>
 
-                <!-- ===================================================== -->
-                <!-- Vista 2: resultados .json (clic para guardar)         -->
-                <!-- ===================================================== -->
+                <!-- Vista 2: resultados .json (clic para guardar) -->
                 <Grid x:Name="PanelResultados">
                     <Grid.Style>
                         <Style TargetType="Grid">
