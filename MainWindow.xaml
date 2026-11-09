@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="TxtToJson"
+        Icon="/Resources/Icons/icon.ico"
         Height="660" Width="880"
         MinHeight="640" MinWidth="700"
         WindowStartupLocation="CenterScreen"
@@ -137,7 +138,7 @@
                         bajan de 100 (el mínimo que cabe sin recortar el contenido).
                         Cuando ya no la necesites: ShowGridLines="False".
                     -->
-                    <Grid x:Name="Grid1" ShowGridLines="True"
+                    <Grid x:Name="Grid1"
                           Background="Transparent"
                           Margin="6">
                         <Grid.ColumnDefinitions>

@@ -10,31 +10,34 @@ namespace TxtToJson
     {
         private const string EjemploTxt =
 """
-nombre:marta
-edad:28
-activa:true
-aficiones: [leer, cocinar]
-direccion:
-    ciudad:madrid
+name:John
+age:28
+active:true
+hobbies: [read, cook]
+address:
+    city:Madrid
     cp: "28001"
-mascotas:
-    -perro:conan
-     edad:2
+pets:
+    -dog:Conan
+     age:2
+    -cat:Fluffy
+     age:1
 """;
 
         private const string EjemploJson =
 """
 {
-  "nombre": "marta",
-  "edad": 28,
-  "activa": true,
-  "aficiones": ["leer", "cocinar"],
-  "direccion": {
-    "ciudad": "madrid",
+  "name": "John",
+  "age": 28,
+  "active": true,
+  "hobbies": ["read", "cook"],
+  "address": {
+    "city": "Madrid",
     "cp": "28001"
   },
-  "mascotas": [
-    { "perro": "conan", "edad": 2 }
+  "pets": [
+    { "dog": "Conan", "age": 2 },
+    { "cat": "Fluffy", "age": 1 }
   ]
 }
 """;

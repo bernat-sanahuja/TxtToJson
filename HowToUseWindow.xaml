@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="How to use"
+        Icon="/Resources/Icons/icon.ico"
         Width="840" Height="740"
         MinWidth="560" MinHeight="420"
         WindowStartupLocation="CenterOwner"
@@ -92,7 +93,7 @@
                                        Foreground="#2563EB"/>
                             <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="12"
                                        Foreground="{StaticResource InkBrush}"
-                                       Text="A dash starts a list item. '-name:conan' makes a list of objects."/>
+                                       Text="A dash starts a list item. '-name:blue' makes a list of objects."/>
                         </Grid>
 
                         <Grid Margin="0,0,0,9">
