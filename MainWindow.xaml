@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="TxtToJson"
+        Icon="/Resources/Icons/icon.ico"
         Height="660" Width="880"
         MinHeight="640" MinWidth="700"
         WindowStartupLocation="CenterScreen"
@@ -17,11 +18,7 @@
         DragLeave="Window_DragLeave">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="InkBrush"   Color="#1F2937"/>
-        <SolidColorBrush x:Key="MutedBrush" Color="#6B7280"/>
-        <SolidColorBrush x:Key="CardBrush"  Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="LineBrush"  Color="#D7DEEA"/>
-        <SolidColorBrush x:Key="HoverBrush" Color="#EDF1F7"/>
+        <!-- Propios de esta ventana: los colores y los botones base están en App.xaml -->
         <SolidColorBrush x:Key="JsonBack"   Color="#EEF2FF"/>
         <SolidColorBrush x:Key="JsonInk"    Color="#2563EB"/>
 
@@ -30,67 +27,33 @@
             <GradientStop Color="#C7D6FA" Offset="1"/>
         </LinearGradientBrush>
 
-        <!-- Botón secundario: fondo transparente y borde fino -->
-        <Style x:Key="GhostButton" TargetType="Button">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Fondo"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{StaticResource LineBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Fondo" Property="Background" Value="{StaticResource HoverBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Fondo" Property="Background" Value="{StaticResource LineBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <!-- "Back": solo se ve en la vista de resultados -->
+        <Style x:Key="BackButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
-        <!-- Botón principal: relleno azul -->
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="18,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#2563EB"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Fondo"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Fondo" Property="Background" Value="#1D4ED8"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Fondo" Property="Background" Value="#1E40AF"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <!-- "Download all": solo se ve en la vista de resultados -->
+        <Style x:Key="DownloadAllButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- "Execute": se oculta en la vista de resultados -->
+        <Style x:Key="ExecuteButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -121,11 +84,20 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Top"
                         Margin="0,2,0,0">
+                <Button Content="← Back"
+                        Style="{StaticResource BackButton}"
+                        Click="Volver_Click"
+                        Margin="0,0,8,0"/>
                 <Button Content="How to use"
                         Style="{StaticResource GhostButton}"
+                        Click="Ayuda_Click"
+                        Margin="0,0,8,0"/>
+                <Button Content="Download all"
+                        Style="{StaticResource DownloadAllButton}"
+                        Click="DescargarTodo_Click"
                         Margin="0,0,8,0"/>
                 <Button Content="Execute"
-                        Style="{StaticResource PrimaryButton}"
+                        Style="{StaticResource ExecuteButton}"
                         Click="Execute_Click"/>
             </StackPanel>
         </Grid>
@@ -166,7 +138,7 @@
                         bajan de 100 (el mínimo que cabe sin recortar el contenido).
                         Cuando ya no la necesites: ShowGridLines="False".
                     -->
-                    <Grid x:Name="Grid1" ShowGridLines="True"
+                    <Grid x:Name="Grid1"
                           Background="Transparent"
                           Margin="6">
                         <Grid.ColumnDefinitions>
@@ -362,11 +334,36 @@
             </Grid>
         </Border>
 
-        <!-- Pie -->
-        <TextBlock Grid.Row="2"
-                   Margin="3,14,0,0"
-                   FontSize="12"
-                   Foreground="{StaticResource MutedBrush}"
-                   Text="Up to 24 files · .txt only"/>
+        <!-- Pie: cambia según la vista -->
+        <Grid Grid.Row="2" Margin="3,14,0,0">
+            <TextBlock FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       Text="Up to 24 files · .txt only">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       Text="Click a .json to save it individually, or use Download all">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MostrandoResultados}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
     </Grid>
 </Window>

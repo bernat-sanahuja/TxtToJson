@@ -30,6 +30,7 @@ namespace TxtToJson
         };
 
         private bool _mostrandoResultados;
+        private HowToUseWindow? _ventanaAyuda;
 
         public MainWindow()
         {
@@ -145,6 +146,28 @@ namespace TxtToJson
         }
 
         // ------------------------------------------------------------------
+        // Navegación entre vistas
+        // ------------------------------------------------------------------
+
+        private void Volver_Click(object sender, RoutedEventArgs e)
+        {
+            MostrandoResultados = false;
+        }
+
+        private void Ayuda_Click(object sender, RoutedEventArgs e)
+        {
+            // Si ya esta abierta, la traemos al frente en lugar de abrir otra.
+            if (_ventanaAyuda is { IsLoaded: true })
+            {
+                _ventanaAyuda.Activate();
+                return;
+            }
+
+            _ventanaAyuda = new HowToUseWindow { Owner = this };
+            _ventanaAyuda.Show();   // Show(), no ShowDialog(): no bloquea la principal
+        }
+
+        // ------------------------------------------------------------------
         // Execute: convierte todos los .txt y muestra los .json
         // ------------------------------------------------------------------
 
@@ -196,29 +219,12 @@ namespace TxtToJson
 
             if (errores.Count > 0)
             {
-                MostrarErrores(errores);
+                MostrarErrores("Some files could not be converted", errores);
             }
-        }
-
-        private static void MostrarErrores(List<string> errores)
-        {
-            const int MaximoAMostrar = 8;
-
-            string detalle = string.Join(Environment.NewLine, errores.Take(MaximoAMostrar));
-
-            if (errores.Count > MaximoAMostrar)
-            {
-                detalle += Environment.NewLine + $"... and {errores.Count - MaximoAMostrar} more";
-            }
-
-            MessageBox.Show(detalle,
-                            "Some files could not be converted",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
         }
 
         // ------------------------------------------------------------------
-        // Descargar un .json haciendo clic en él
+        // Guardar un .json individual: clic en su tarjeta
         // ------------------------------------------------------------------
 
         private void GuardarJson_Click(object sender, RoutedEventArgs e)
@@ -256,8 +262,111 @@ namespace TxtToJson
         }
 
         // ------------------------------------------------------------------
-        // Avisos del drop
+        // Guardar todos los .json en una carpeta
         // ------------------------------------------------------------------
+
+        private void DescargarTodo_Click(object sender, RoutedEventArgs e)
+        {
+            if (Resultados.Count == 0)
+            {
+                return;
+            }
+
+            OpenFolderDialog dialogo = new OpenFolderDialog
+            {
+                Title = "Choose a folder for the JSON files"
+            };
+
+            if (dialogo.ShowDialog() != true)
+            {
+                return;
+            }
+
+            string carpeta = dialogo.FolderName;
+
+            // Evitar que dos .txt con el mismo nombre se pisen dentro del lote.
+            List<string> destinos = new List<string>();
+            HashSet<string> usados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (ResultadoJson resultado in Resultados)
+            {
+                string nombre = resultado.Nombre;
+                string sinExtension = Path.GetFileNameWithoutExtension(nombre);
+                int copia = 2;
+
+                while (!usados.Add(nombre))
+                {
+                    nombre = $"{sinExtension} ({copia}).json";
+                    copia++;
+                }
+
+                destinos.Add(Path.Combine(carpeta, nombre));
+            }
+
+            int existentes = destinos.Count(ruta => File.Exists(ruta));
+
+            if (existentes > 0)
+            {
+                MessageBoxResult respuesta = MessageBox.Show(
+                    $"{existentes} file(s) already exist in that folder.{Environment.NewLine}Overwrite them?",
+                    "Confirm",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (respuesta != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            int guardados = 0;
+            List<string> errores = new List<string>();
+
+            for (int i = 0; i < Resultados.Count; i++)
+            {
+                try
+                {
+                    File.WriteAllText(destinos[i], Resultados[i].Json, new UTF8Encoding(false));
+                    guardados++;
+                }
+                catch (Exception error)
+                {
+                    errores.Add($"{Path.GetFileName(destinos[i])} → {error.Message}");
+                }
+            }
+
+            if (errores.Count > 0)
+            {
+                MostrarErrores($"Saved {guardados} of {Resultados.Count} file(s)", errores);
+                return;
+            }
+
+            MessageBox.Show($"Saved {guardados} file(s) to:{Environment.NewLine}{carpeta}",
+                            "Download complete",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+        }
+
+        // ------------------------------------------------------------------
+        // Avisos
+        // ------------------------------------------------------------------
+
+        private static void MostrarErrores(string titulo, List<string> errores)
+        {
+            const int MaximoAMostrar = 8;
+
+            string detalle = string.Join(Environment.NewLine, errores.Take(MaximoAMostrar));
+
+            if (errores.Count > MaximoAMostrar)
+            {
+                detalle += Environment.NewLine + $"... and {errores.Count - MaximoAMostrar} more";
+            }
+
+            MessageBox.Show(detalle,
+                            titulo,
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+        }
 
         private static void MostrarAvisos(int noTxt, int repetidos, int sobrantes)
         {
